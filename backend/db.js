@@ -2,6 +2,7 @@ const sqlite3 = require('sqlite3').verbose();
 const db = new sqlite3.Database('ecommerce.db');
 
 db.serialize(() => {
+  // Existing tables
   db.run(`CREATE TABLE IF NOT EXISTS distribution_centers (
     id INTEGER PRIMARY KEY,
     name TEXT,
@@ -77,6 +78,24 @@ db.serialize(() => {
     shipped_at TEXT,
     delivered_at TEXT,
     returned_at TEXT
+  )`);
+
+  // 💬 New tables for conversation tracking
+  db.run(`CREATE TABLE IF NOT EXISTS conversation_sessions (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id INTEGER,
+    title TEXT,
+    created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY(user_id) REFERENCES users(id)
+  )`);
+
+  db.run(`CREATE TABLE IF NOT EXISTS conversation_messages (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    session_id INTEGER,
+    sender TEXT, -- 'user' or 'ai'
+    message TEXT,
+    created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY(session_id) REFERENCES conversation_sessions(id)
   )`);
 
   console.log("✅ Tables created successfully.");
