@@ -1,7 +1,14 @@
 const sqlite3 = require('sqlite3').verbose();
-const db = new sqlite3.Database('ecommerce.db');
+const path = require('path');
 
-db.serialize(() => {
+// Create a persistent database connection
+const dbPath = path.join(__dirname, 'ecommerce.db');
+const db = new sqlite3.Database(dbPath);
+
+// Initialize database tables
+const initializeDatabase = () => {
+  return new Promise((resolve, reject) => {
+    db.serialize(() => {
   // Existing tables
   db.run(`CREATE TABLE IF NOT EXISTS distribution_centers (
     id INTEGER PRIMARY KEY,
@@ -98,7 +105,13 @@ db.serialize(() => {
     FOREIGN KEY(session_id) REFERENCES conversation_sessions(id)
   )`);
 
-  console.log("✅ Tables created successfully.");
-});
+      console.log("✅ Tables created successfully.");
+      resolve();
+    });
+  });
+};
 
-db.close();
+// Initialize the database when the module is loaded
+initializeDatabase().catch(console.error);
+
+module.exports = db;
